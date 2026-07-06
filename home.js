@@ -1,7 +1,6 @@
 /**
  * ANAPTIXI DISCIPLESHIP PLATFORM - HOME TAB SCRIPT
  * File: home.js
- * Description: Handles DOM manipulation, interactivity, auth toggling, and backend communication.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         const diff = endOfDay - now;
-
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
@@ -44,11 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
-    // 3. AUTHENTICATION MODAL & DEVICE TRACKING TOGGLE
+    // 3. UI STATE & MODAL MANAGERS
     // ==========================================
-    const loginBtn = document.getElementById('nav-login-btn'); // Now the User SVG Icon
+    const loginBtn = document.getElementById('nav-login-btn'); 
     const loginModal = document.getElementById('login-modal');
     const closeLoginModal = document.getElementById('close-login-modal');
+    
+    // Profile Modal specific variables
+    const profileModal = document.getElementById('profile-modal');
+    const closeProfileModal = document.getElementById('close-profile-modal');
+    const logoutBtn = document.getElementById('logout-btn');
 
     // Toggle Variables
     const tabRegister = document.getElementById('nav-tab-register');
@@ -56,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewRegister = document.getElementById('register-component');
     const viewLogin = document.getElementById('login-component');
 
-    // Function to handle the UI switch between Login and Register
     function switchAuthView(viewName) {
         if (viewName === 'login') {
             viewRegister.style.display = 'none';
@@ -71,27 +73,72 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Manual Tab Clicking
     if (tabLogin) tabLogin.addEventListener('click', () => switchAuthView('login'));
     if (tabRegister) tabRegister.addEventListener('click', () => switchAuthView('register'));
 
-    // Open Modal & Check Local Storage
+    // Dynamic Navigation Icon Function
+    function updateNavToProfile(userData) {
+        // Change default SVG to the exact uploaded Base64 string image
+        if (userData.profilePic) {
+            loginBtn.innerHTML = `<img src="${userData.profilePic}" alt="Profile" class="nav-profile-pic">`;
+            loginBtn.style.padding = '0';
+            loginBtn.style.borderColor = 'var(--accent-color)';
+        }
+        
+        // Populate the specific My Profile modal fields
+        document.getElementById('profile-display-pic').src = userData.profilePic || "";
+        document.getElementById('profile-display-fn').textContent = userData.firstName || "";
+        document.getElementById('profile-display-sn').textContent = userData.surname || "";
+        document.getElementById('profile-display-un').textContent = userData.handle || "";
+        document.getElementById('profile-display-age').textContent = userData.age || "";
+        
+        // Unhide standard restricted navigation tabs
+        document.body.classList.add('logged-in');
+    }
+
+    // Checking Local Session Storage on initial load
+    const activeSession = localStorage.getItem('anaptixi_active_user');
+    if (activeSession) {
+        updateNavToProfile(JSON.parse(activeSession));
+    }
+
+    // MAIN NAVIGATION BUTTON CLICK HANDLER
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            // Check if this device has logged in or registered before
-            const isReturning = localStorage.getItem('anaptixi_returning_user');
-            
-            if (isReturning === 'true') {
-                switchAuthView('login'); // Default to Login for returning users
+            // Decision logic: Are they logged in or not?
+            if (document.body.classList.contains('logged-in')) {
+                profileModal.style.display = 'flex'; // Pop out the Profile 
             } else {
-                switchAuthView('register'); // Default to Register for new devices
+                const isReturning = localStorage.getItem('anaptixi_returning_user');
+                if (isReturning === 'true') {
+                    switchAuthView('login'); 
+                } else {
+                    switchAuthView('register');
+                }
+                loginModal.style.display = 'flex'; // Pop out Auth Gateway
             }
+        });
+    }
+
+    // Logout Process Setup
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('anaptixi_active_user');
+            document.body.classList.remove('logged-in');
             
-            loginModal.style.display = 'flex';
+            // Revert back to User SVG icon
+            loginBtn.innerHTML = `<svg id="default-user-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+            loginBtn.style.padding = '';
+            loginBtn.style.borderColor = '';
+            
+            profileModal.style.display = 'none';
+            alert("You have safely logged out.");
+            window.scrollTo(0,0);
         });
     }
 
     if (closeLoginModal) closeLoginModal.addEventListener('click', () => loginModal.style.display = 'none');
+    if (closeProfileModal) closeProfileModal.addEventListener('click', () => profileModal.style.display = 'none');
 
 
     // ==========================================
@@ -179,10 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     alert(`Success! Your Anaptixi Identity has been created: ${result.handle}`);
-                    
-                    // Mark device as returning user
                     localStorage.setItem('anaptixi_returning_user', 'true');
-                    
                     registerForm.reset();
                     if (loginModal) loginModal.style.display = 'none';
                 } else {
@@ -197,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 7. LOGIN INTERCEPTION & UNLOCKING TABS
+    // 7. LOGIN INTERCEPTION & CACHING
     // ==========================================
     const loginForm = document.getElementById('login-form');
 
@@ -220,11 +264,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     alert(`Login granted! Welcome back, ${result.user.firstName}.`);
                     
-                    // Mark device as returning user 
+                    // Save specific user data to cache natively on the browser
                     localStorage.setItem('anaptixi_returning_user', 'true');
+                    localStorage.setItem('anaptixi_active_user', JSON.stringify(result.user));
                     
-                    // UNLOCK THE RESTRICTED TABS BY ADDING CLASS TO BODY
-                    document.body.classList.add('logged-in');
+                    // Update navigation dynamically without reloading page
+                    updateNavToProfile(result.user);
                     
                     loginForm.reset();
                     if (loginModal) loginModal.style.display = 'none';
@@ -239,10 +284,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Close modals when clicking outside of them
     window.addEventListener('click', (e) => {
         if (e.target === loginModal) loginModal.style.display = 'none';
         if (e.target === joinModal) joinModal.style.display = 'none';
         if (e.target === askModal) askModal.style.display = 'none';
+        if (e.target === profileModal) profileModal.style.display = 'none';
     });
 });

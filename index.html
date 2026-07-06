@@ -31,7 +31,7 @@
         </ul>
 
         <button id="nav-login-btn" class="btn-user-icon" aria-label="User Account">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg id="default-user-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -45,7 +45,6 @@
     </div>
 
     <main class="container">
-        
         <section class="overview-section">
             <h2>An overview of Anaptixi</h2>
             <p>Anaptixi is a discipleship and mentorship platform that puts structures in place to ensure the growth of its disciples.</p>
@@ -87,7 +86,6 @@
 
             <p style="margin-top: 20px;">If you’re still willing to join, please fill out this <a id="join-form-link" class="form-link">form</a>.</p>
         </section>
-
     </main>
 
     <div id="ask-bubble" class="ask-bubble">
@@ -154,6 +152,36 @@
         </div>
     </div>
 
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span id="close-profile-modal" class="close-btn">&times;</span>
+            <h2 style="margin-bottom: 25px;">My Profile</h2>
+            
+            <img id="profile-display-pic" src="" alt="Profile Picture" class="profile-display-img">
+            
+            <div class="profile-info-grid">
+                <div class="profile-row">
+                    <span class="profile-label">First Name:</span>
+                    <span id="profile-display-fn" class="profile-value"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Surname:</span>
+                    <span id="profile-display-sn" class="profile-value"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Username:</span>
+                    <span id="profile-display-un" class="profile-value" style="color: var(--accent-color); font-weight: 600;"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Age:</span>
+                    <span id="profile-display-age" class="profile-value"></span>
+                </div>
+            </div>
+
+            <button id="logout-btn" class="submit-btn" style="background-color: var(--danger-color); margin-top: 25px;">Log Out</button>
+        </div>
+    </div>
+
     <div id="ask-modal" class="modal-overlay">
         <div class="modal-content">
             <span id="close-ask-modal" class="close-btn">&times;</span>
@@ -175,7 +203,6 @@
             <h2 class="form-main-title">Anaptixi Membership Application</h2>
             
             <form action="https://formspree.io/f/xdarkbvg" method="POST">
-                
                 <fieldset class="form-section">
                     <legend>Personal Details</legend>
                     <div class="form-group">
