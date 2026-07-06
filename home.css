@@ -1,0 +1,593 @@
+/**
+ * ANAPTIXI DISCIPLESHIP PLATFORM - HOME TAB STYLES
+ * File: home.css
+ */
+
+/* ==========================================
+   1. GLOBAL VARIABLES & RESET
+   ========================================== */
+:root {
+    --primary-color: #0f172a;      /* Deep Navy */
+    --accent-color: #d97706;       /* Warm Gold */
+    --accent-hover: #b45309;
+    --success-color: #16a34a;      /* Completed Green */
+    --danger-color: #dc2626;       /* Missed/Error Red */
+    --bg-color: #f8fafc;           /* Light Slate */
+    --surface-color: #ffffff;      /* White Cards */
+    --text-main: #334155;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --font-family: 'Inter', sans-serif;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+/* ==========================================
+   2. RESTRUCTURED NAVIGATION BAR
+   ========================================== */
+.navbar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    background-color: var(--primary-color);
+    padding: 12px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-md);
+}
+
+/* Brand/Logo Layout Container */
+.nav-brand {
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    height: 42px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Centered Navigation Links */
+.nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    list-style: none;
+    padding: 0 20px;
+}
+
+.nav-link {
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13.5px;
+    letter-spacing: 0.8px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    padding: 6px 0;
+    border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+    color: var(--accent-color);
+}
+
+/* AUTH CONDITIONAL STATE */
+/* Hide restricted links globally by default */
+.auth-required {
+    display: none !important;
+}
+
+/* Show restricted links when the auth profile engine toggles active class */
+body.logged-in .auth-required {
+    display: block !important;
+}
+
+/* Premium User SVG Action Button */
+.btn-user-icon {
+    background: transparent;
+    border: 2px solid rgba(217, 119, 6, 0.2);
+    color: var(--accent-color);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-user-icon:hover {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    border-color: var(--accent-color);
+    transform: scale(1.05);
+}
+
+/* ==========================================
+   3. SCROLLING TICKER
+   ========================================== */
+.ticker-container {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 10px 0;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: inset 0 -2px 5px rgba(0,0,0,0.1);
+}
+
+.ticker-text {
+    display: inline-block;
+    padding-left: 100%;
+    animation: ticker 25s linear infinite;
+}
+
+@keyframes ticker {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* ==========================================
+   4. MAIN ARCHITECTURE LAYOUT
+   ========================================== */
+.container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+section {
+    background-color: var(--surface-color);
+    padding: 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+section h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 24px;
+    position: relative;
+    padding-bottom: 8px;
+}
+
+section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background-color: var(--accent-color);
+    border-radius: 2px;
+}
+
+section p {
+    margin-bottom: 15px;
+    color: var(--text-main);
+    font-size: 15.5px;
+}
+
+/* ==========================================
+   5. LEADERSHIP GRID SYSTEM
+   ========================================== */
+.leadership-title {
+    text-align: center;
+    margin-bottom: 35px !important;
+}
+
+.leadership-title::after {
+    left: 50% !important;
+    transform: translateX(-50%);
+}
+
+.leadership-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.leader-card {
+    background-color: var(--bg-color);
+    border-radius: 10px;
+    padding: 25px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.leader-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+.leader-card img {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 3px solid #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+.leader-card h3 {
+    color: var(--primary-color);
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.leader-card p {
+    color: var(--accent-color);
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+/* ==========================================
+   6. AMENDED JOIN US SECTION & TEXT SYSTEM
+   ========================================== */
+.join-section {
+    text-align: center;
+}
+
+/* Left-Justified Text Block for Strict Structural Content */
+.warning-block {
+    text-align: left;
+    max-width: 750px;
+    margin: 25px auto;
+    padding: 25px;
+    background-color: rgba(220, 38, 38, 0.02);
+    border-left: 4px solid var(--danger-color);
+    border-radius: 6px;
+    border-top: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.warning-text {
+    font-weight: 700;
+    color: var(--danger-color);
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    margin-bottom: 12px;
+}
+
+.mentorship-note {
+    font-weight: 500;
+    color: var(--text-main);
+    background-color: var(--bg-color);
+    padding: 12px 15px;
+    border-radius: 6px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 15px;
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+.form-link {
+    color: var(--accent-color);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border-bottom: 1px dashed var(--accent-color);
+    padding-bottom: 2px;
+    transition: all 0.2s;
+}
+
+.form-link:hover {
+    color: var(--accent-hover);
+    border-bottom-style: solid;
+}
+
+/* ==========================================
+   7. FLOATING INTERACTION INTERFACE
+   ========================================== */
+.ask-bubble {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.3);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    z-index: 99;
+}
+
+.ask-bubble:hover {
+    transform: translateY(-3px) scale(1.02);
+    background-color: #1e293b;
+}
+
+.bubble-icon {
+    font-size: 18px;
+}
+
+.ask-bubble span:last-child {
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================
+   8. PREMIUM MODAL SYSTEM
+   ========================================== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-content {
+    background-color: var(--surface-color);
+    padding: 40px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: var(--danger-color);
+}
+
+/* Auth Modal Specific Layout */
+.auth-modal {
+    padding: 35px;
+}
+
+/* Sleek Inner Tab Pill Selector */
+.auth-toggle-nav {
+    display: flex;
+    background-color: var(--bg-color);
+    padding: 6px;
+    border-radius: 30px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border-color);
+}
+
+.auth-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 0;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 25px;
+    transition: all 0.25s ease;
+}
+
+.auth-tab.active {
+    background-color: var(--surface-color);
+    color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.auth-view h2 {
+    color: var(--primary-color);
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+/* ==========================================
+   9. PREMIUM MEMBERSHIP FIELDSET STYLING
+   ========================================== */
+.form-main-title {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 26px;
+    color: var(--primary-color);
+}
+
+/* Section Box System */
+.form-section {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    background-color: var(--surface-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.form-section legend {
+    font-weight: 700;
+    color: var(--primary-color);
+    padding: 0 14px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-left: 3px solid var(--accent-color);
+}
+
+/* Confidential Subtle Warning Highlight */
+.confidential-section {
+    background-color: rgba(15, 23, 42, 0.01);
+    border-color: rgba(15, 23, 42, 0.1);
+}
+
+.section-notice {
+    font-size: 13px !important;
+    color: var(--text-muted);
+    background-color: #f1f5f9;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 20px !important;
+    border-left: 3px solid var(--text-muted);
+}
+
+/* ==========================================
+   10. GENERIC FORM FIELDS ELEMENTS
+   ========================================== */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 14.5px;
+    color: var(--primary-color);
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: var(--font-family);
+    color: var(--text-main);
+    font-size: 14.5px;
+    background-color: var(--bg-color);
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+/* Checkbox Alignment Setup */
+.checkbox-label {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 8px;
+    font-weight: 400 !important;
+    font-size: 13.5px !important;
+    color: var(--text-muted) !important;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-top: 4px;
+    cursor: pointer;
+    accent-color: var(--accent-color);
+}
+
+/* Base Dynamic Container Configuration */
+.dynamic-edu-section {
+    display: none;
+    background-color: var(--bg-color);
+    padding: 20px 20px 5px 20px;
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+    margin-top: 15px;
+}
+
+/* Form Submission Actions */
+.submit-btn {
+    width: 100%;
+    padding: 13px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    opacity: 0.95;
+}
+
+/* ==========================================
+   11. RESPONSIVE LAYER ADAPTABILITY
+   ========================================== */
+@media (max-width: 900px) {
+    .navbar {
+        grid-template-columns: 1fr auto;
+        gap: 15px;
+        padding: 15px 20px;
+    }
+
+    .nav-links {
+        grid-column: span 2;
+        order: 3;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding: 10px 0 5px 0;
+        gap: 18px;
+    }
+    
+    .nav-link {
+        font-size: 12.5px;
+        white-space: nowrap;
+    }
+}
