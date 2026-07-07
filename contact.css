@@ -46,10 +46,26 @@ section h2 { color: var(--primary-color); margin-bottom: 20px; font-size: 24px; 
 section h2::after { content: ''; position: absolute; bottom: 0; left: 0; width: 40px; height: 3px; background-color: var(--accent-color); border-radius: 2px; }
 
 /* Contact Specific Styling */
-.contact-section { text-align: center; max-width: 800px; margin: 0 auto; }
-.contact-section h2::after { left: 50%; transform: translateX(-50%); }
-.contact-notice-block { font-size: 16px; color: var(--text-main); margin-top: 20px; }
-.contact-notice-block p { margin-bottom: 15px; }
+.contact-section { 
+    max-width: 800px; 
+    margin: 0 auto; 
+    text-align: left; 
+}
+.contact-section h2 { 
+    text-align: center; 
+}
+.contact-section h2::after { 
+    left: 50%; 
+    transform: translateX(-50%); 
+}
+.contact-notice-block { 
+    font-size: 16px; 
+    color: var(--text-main); 
+    margin-top: 20px; 
+}
+.contact-notice-block p { 
+    margin-bottom: 15px; 
+}
 
 .mail-link {
     color: var(--accent-color);
