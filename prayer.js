@@ -14,10 +14,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Google Drive Audio IDs (Placeholder IDs - Replace with your 10 actual Drive File IDs)
+    // Google Drive Audio IDs (Exact IDs Provided)
     const audioDriveIDs = [
-        'FILE_ID_1', 'FILE_ID_2', 'FILE_ID_3', 'FILE_ID_4', 'FILE_ID_5',
-        'FILE_ID_6', 'FILE_ID_7', 'FILE_ID_8', 'FILE_ID_9', 'FILE_ID_10'
+        "1uMj9Aag4Zcn20tJKhnlbaTYTpsf_a1md",
+        "17I-nKEyD28Ilk5rH6Y1rkfMyZDKnwjF_",
+        "1n7EM76lu2cgkkNScZ2EDFtvIzZyY7AQz",
+        "1sCZDKf2HUt2t1Y3nWkPRJlU3rmDa7JYG",
+        "1S-IRt07H8czvrV0SWm6bRxFlPSUyYmSJ",
+        "1Sm5117BDjJDOKdt_iLqjjXa-C3bmXKs6",
+        "17oZzzjNQ5DyJdU_9o0PlQJoy4eddiBw3",
+        "1Oze0RfRJdXF21AUBdy_Imd_2DC9--YYE",
+        "1HkO7644cENwHtc9HV4pk7O0KLhIEapdd",
+        "1_dHv7wasCn1lon-iG3Dm4aO2I-BW-PHq"
     ];
     let backgroundAudio = new Audio();
     
@@ -37,14 +45,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Scheduled Prayer Elements
     const scheduledBtn = document.getElementById('btn-scheduled-prayer');
     const scheduledTimerDisplay = document.getElementById('scheduled-timer');
-    const hourGridContainer = document.getElementById('hour-grid');
 
     // Free-Will Elements
     const freewillBtn = document.getElementById('btn-freewill-prayer');
     const freewillTimerDisplay = document.getElementById('freewill-timer');
 
     // ==========================================
-    // 2. SUB-TAB SWITCHING & TAB LOCKING
+    // 2. UNAVAILABLE TABS INTERCEPTOR (Ported from Home)
+    // ==========================================
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            if (e.target.getAttribute('data-status') === 'unavailable') {
+                e.preventDefault();
+                const tabName = e.target.textContent.trim();
+                alert(`${tabName} Tab is currently unavailable, check back later. blessings!`);
+            }
+        });
+    });
+
+    // ==========================================
+    // 3. SUB-TAB SWITCHING & TAB LOCKING
     // ==========================================
     function switchSubTab(tabId) {
         if (isPrayerActive) {
@@ -80,16 +100,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 3. AUDIO MANAGEMENT (CDN BYPASS)
+    // 4. AUDIO MANAGEMENT (BLOB FETCH BYPASS)
     // ==========================================
-    function startAudioIfRequested() {
+    async function startAudioIfRequested() {
         const wantsAudio = confirm("Would you like to play background sound during your prayer?");
         if (wantsAudio) {
             const randomID = audioDriveIDs[Math.floor(Math.random() * audioDriveIDs.length)];
-            // Dynamic URL routing through Google's User Content CDN
-            backgroundAudio.src = `https://drive.googleusercontent.com/download?id=${randomID}&export=download`;
-            backgroundAudio.loop = true;
-            backgroundAudio.play().catch(err => console.log("Audio play blocked by browser:", err));
+            const cdnUrl = `https://drive.googleusercontent.com/download?id=${randomID}&export=download`;
+            
+            try {
+                // Fetch as Blob to bypass 403 strict cross-site playback blocks
+                const response = await fetch(cdnUrl);
+                if (!response.ok) throw new Error("Audio CDN blocked.");
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                
+                backgroundAudio.src = objectUrl;
+                backgroundAudio.loop = true;
+                backgroundAudio.play().catch(err => console.log("Audio play blocked by browser:", err));
+            } catch (err) {
+                console.error("Failed to route background audio:", err);
+            }
         }
     }
 
@@ -99,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 4. SCHEDULED PRAYER LOGIC
+    // 5. SCHEDULED PRAYER LOGIC
     // ==========================================
     function formatTime(totalSeconds, isCountdown = false) {
         let displaySeconds = isCountdown ? Math.max(0, SCHEDULED_TARGET_SECONDS - totalSeconds) : totalSeconds;
@@ -110,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleScheduledPrayerClick() {
         if (!isPrayerActive) {
-            // START PRAYER
             isPrayerActive = true;
             isPrayerComplete = false;
             activePrayerType = 'scheduled';
@@ -127,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 scheduledTimerDisplay.textContent = formatTime(secondsElapsed, true);
 
                 if (secondsElapsed === SCHEDULED_TARGET_SECONDS) {
-                    // TIMER COMPLETE
                     isPrayerComplete = true;
                     stopAudio(); // Alert user to stop praying
                     scheduledBtn.textContent = "Stop Praying and Record Session";
@@ -137,34 +166,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1000);
 
         } else if (isPrayerActive && !isPrayerComplete) {
-            // HALT PRAYER
             const confirmHalt = confirm("Your Prayer isn't complete yet, are you sure you want to halt? Note that it won't be recorded and this hour would still be left as null.");
-            if (confirmHalt) {
-                resetPrayerState();
-            }
+            if (confirmHalt) resetPrayerState();
         } else if (isPrayerActive && isPrayerComplete) {
-            // STOP AND RECORD PRAYER
             recordSession('scheduled', SCHEDULED_TARGET_SECONDS);
+            
+            // Log local cache to instantly update grid colors
+            let today = new Date().toDateString();
+            let completedHours = JSON.parse(localStorage.getItem(`anaptixi_grid_${today}`)) || [];
+            completedHours.push(new Date().getHours());
+            localStorage.setItem(`anaptixi_grid_${today}`, JSON.stringify(completedHours));
+            
             resetPrayerState();
-            updateHourGrid(); // Mark hour as green
+            updateHourGrid();
         }
     }
 
     if (scheduledBtn) scheduledBtn.addEventListener('click', handleScheduledPrayerClick);
 
     // ==========================================
-    // 5. FREE-WILL PRAYER LOGIC
+    // 6. FREE-WILL PRAYER LOGIC
     // ==========================================
     function handleFreewillPrayerClick() {
         if (!isPrayerActive) {
-            // START PRAYER
             isPrayerActive = true;
             isPrayerComplete = false;
             activePrayerType = 'freewill';
             secondsElapsed = 0;
             
             toggleNavigationLock(true);
-            freewillBtn.textContent = "Stop Praying and Record Session"; // Free will can be stopped anytime
+            freewillBtn.textContent = "Stop Praying and Record Session";
             freewillBtn.classList.add('btn-record');
             
             startAudioIfRequested();
@@ -175,7 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1000);
 
         } else {
-            // STOP AND RECORD PRAYER
             stopAudio();
             recordSession('freewill', secondsElapsed);
             resetPrayerState();
@@ -186,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (freewillBtn) freewillBtn.addEventListener('click', handleFreewillPrayerClick);
 
     // ==========================================
-    // 6. SHARED PRAYER UTILITIES
+    // 7. SHARED PRAYER UTILITIES & SYNC
     // ==========================================
     function resetPrayerState() {
         clearInterval(prayerInterval);
@@ -197,19 +227,16 @@ document.addEventListener('DOMContentLoaded', () => {
         secondsElapsed = 0;
         toggleNavigationLock(false);
 
-        // Reset Scheduled UI
         scheduledTimerDisplay.textContent = "05:00";
         scheduledBtn.textContent = "Start Praying";
         scheduledBtn.className = "prayer-btn";
 
-        // Reset Freewill UI
         freewillBtn.textContent = "Start Praying";
         freewillBtn.className = "prayer-btn";
     }
 
     async function recordSession(type, durationInSeconds) {
         try {
-            // We will build syncProgress.js later
             const response = await fetch('/.netlify/functions/syncProgress', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -221,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (response.ok) {
                 alert(`Session securely recorded! Time prayed: ${Math.floor(durationInSeconds / 60)}m ${durationInSeconds % 60}s`);
-                fetchProgressData(); // Refresh Progress Monitor
+                fetchProgressData(); // Refresh Progress Monitor Data
             } else {
                 console.error("Failed to sync session.");
             }
@@ -231,40 +258,98 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 7. PROGRESS MONITOR & GRID LOGIC
+    // 8. PROGRESS MONITOR DOM MAPPING
     // ==========================================
-    function updateHourGrid() {
-        // We will mock this function visually until HTML is built
-        // It will map the current time and paint hours red (missed), green (done), numb (future)
-        const currentHour = new Date().getHours();
-        const boxes = document.querySelectorAll('.hour-box');
-        
-        boxes.forEach(box => {
-            const boxHour = parseInt(box.dataset.hour);
-            if (boxHour > currentHour) {
-                box.className = 'hour-box numb';
-            } else if (boxHour < currentHour && !box.classList.contains('green')) {
-                box.className = 'hour-box red';
-            }
-        });
-    }
-
     async function fetchProgressData() {
-        // Will connect to getProgress.js later
         try {
             const response = await fetch('/.netlify/functions/getProgress', {
                 method: 'POST',
                 body: JSON.stringify({ handle: activeUser.handle })
             });
             const data = await response.json();
-            // Update UI elements based on data...
+            
+            // Map Percentages to DOM
+            document.getElementById('stat-daily').textContent = `${data.dailyPercent || 0}%`;
+            document.getElementById('stat-monthly').textContent = `${data.monthlyPercent || 0}%`;
+            document.getElementById('stat-yearly').textContent = `${data.yearlyPercent || 0}%`;
+            
+            // Map Free-Flow Logs to DOM
+            const logContainer = document.getElementById('freeflow-logs');
+            logContainer.innerHTML = '';
+            
+            if (data.freeFlowLogs && data.freeFlowLogs.length > 0) {
+                data.freeFlowLogs.forEach(log => {
+                    const d = new Date(log.completedAt);
+                    const formattedDate = d.toLocaleString();
+                    const m = Math.floor(log.durationInSeconds / 60);
+                    const s = log.durationInSeconds % 60;
+                    
+                    logContainer.innerHTML += `
+                        <li style="padding: 10px; background: #f8fafc; margin-bottom: 5px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            <strong>Date:</strong> ${formattedDate} | <strong>Duration:</strong> ${m}m ${s}s
+                        </li>
+                    `;
+                });
+            } else {
+                logContainer.innerHTML = `<li style="padding: 10px; background: #f8fafc; margin-bottom: 5px; border-radius: 6px;">No free-flow sessions recorded yet.</li>`;
+            }
+
         } catch (error) {
-            console.log("Progress Sync loading...", error);
+            console.log("Progress Sync loading failed:", error);
+            document.getElementById('freeflow-logs').innerHTML = `<li style="padding: 10px; color: #dc2626;">Failed to load logs. Network error.</li>`;
         }
     }
 
+    function updateHourGrid() {
+        const currentHour = new Date().getHours();
+        const today = new Date().toDateString();
+        const completedHours = JSON.parse(localStorage.getItem(`anaptixi_grid_${today}`)) || [];
+        const boxes = document.querySelectorAll('.hour-box');
+        
+        boxes.forEach(box => {
+            const boxHour = parseInt(box.dataset.hour);
+            
+            if (completedHours.includes(boxHour)) {
+                box.className = 'hour-box green'; // Explicitly recorded
+            } else if (boxHour < currentHour) {
+                box.className = 'hour-box red'; // Hour passed, no record
+            } else {
+                box.className = 'hour-box numb'; // Future hour or current hour not yet prayed
+            }
+        });
+    }
+
     // ==========================================
-    // 8. FREE-WILL AI CHAT MODULE
+    // 9. PDF DOWNLOAD LOGIC (11 PM Time-Lock)
+    // ==========================================
+    const downloadBtn = document.getElementById('btn-download-report');
+    
+    function checkPdfButtonAvailability() {
+        const currentHour = new Date().getHours();
+        if (currentHour === 23) { // Active only from 11 PM to 11:59 PM
+            downloadBtn.style.display = 'inline-block';
+        } else {
+            downloadBtn.style.display = 'none';
+        }
+    }
+
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => {
+            const progressElement = document.getElementById('tab-progress');
+            const opt = {
+                margin:       1,
+                filename:     `Anaptixi_Progress_${activeUser.firstName}_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            // Uses the html2pdf CDN library we injected into prayer.html
+            html2pdf().set(opt).from(progressElement).save();
+        });
+    }
+
+    // ==========================================
+    // 10. FREE-WILL AI CHAT MODULE
     // ==========================================
     const aiChatInput = document.getElementById('ai-chat-input');
     const aiSendBtn = document.getElementById('ai-send-btn');
@@ -277,50 +362,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
             aiResponseArea.innerHTML += `<p class="user-msg"><strong>You:</strong> ${prompt}</p>`;
             aiChatInput.value = '';
-            aiResponseArea.innerHTML += `<p class="sys-msg" id="ai-loading"><em>Meditating on scripture...</em></p>`;
+            aiResponseArea.innerHTML += `<p class="sys-msg" id="ai-loading"><em>Meditating on request...</em></p>`;
+            aiResponseArea.scrollTop = aiResponseArea.scrollHeight; // Auto-scroll to bottom
 
             try {
-                // Connect to chat.js
                 const response = await fetch('/.netlify/functions/chat', {
                     method: 'POST',
                     body: JSON.stringify({ prompt: prompt })
                 });
                 const data = await response.json();
                 document.getElementById('ai-loading').remove();
-                aiResponseArea.innerHTML += `<p class="ai-msg"><strong>Anaptixi Guide:</strong> ${data.message}</p>`;
+                
+                if (response.ok) {
+                    aiResponseArea.innerHTML += `<p class="ai-msg"><strong>Anaptixi Guide:</strong> ${data.message}</p>`;
+                } else {
+                    aiResponseArea.innerHTML += `<p class="ai-err">Error: ${data.message}</p>`;
+                }
+                aiResponseArea.scrollTop = aiResponseArea.scrollHeight;
             } catch (err) {
                 document.getElementById('ai-loading').remove();
-                aiResponseArea.innerHTML += `<p class="ai-err">Failed to connect to AI module.</p>`;
+                aiResponseArea.innerHTML += `<p class="ai-err">Failed to connect to AI module. Please try again.</p>`;
             }
         });
     }
 
     // ==========================================
-    // 9. PUSH NOTIFICATION REGISTRATION (TEXT ONLY)
+    // 11. INITIALIZATION LOOP
     // ==========================================
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-        navigator.serviceWorker.register('/sw.js').then(swReg => {
-            console.log('Service Worker is registered', swReg);
-            
-            // Ask for notification permission if not already granted
-            if (Notification.permission === 'default') {
-                document.getElementById('notification-prompt').style.display = 'block'; // Ensure we build this in HTML
-                document.getElementById('btn-allow-push').addEventListener('click', () => {
-                    Notification.requestPermission().then(permission => {
-                        if (permission === 'granted') {
-                            alert("You will now receive hourly push notifications.");
-                            document.getElementById('notification-prompt').style.display = 'none';
-                        }
-                    });
-                });
-            }
-        }).catch(error => {
-            console.error('Service Worker Error', error);
-        });
-    }
-
-    // Initialization calls
     updateHourGrid();
-    setInterval(updateHourGrid, 60000); // Check hour grid every minute
+    checkPdfButtonAvailability();
     fetchProgressData();
+    
+    // Check grid logic and PDF button unlock loop every minute
+    setInterval(() => {
+        updateHourGrid();
+        checkPdfButtonAvailability();
+    }, 60000); 
+
 });
