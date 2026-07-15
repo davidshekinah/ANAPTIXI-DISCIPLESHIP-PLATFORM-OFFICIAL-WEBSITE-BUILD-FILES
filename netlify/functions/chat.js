@@ -1,5 +1,5 @@
 /**
- * ANAPTIXI DISCIPLESHIP PLATFORM - AI SECURE MIDDLEMAN (WITH FAILOVER LOGIC)
+ * ANAPTIXI DISCIPLESHIP PLATFORM - AI SECURE MIDDLEMAN
  * File: netlify/functions/chat.js
  */
 
@@ -10,12 +10,14 @@ exports.handler = async (event, context) => {
         const data = JSON.parse(event.body);
         const apiKey = process.env.GEMINI_API_KEY;
 
-        if (!apiKey) return { statusCode: 500, body: JSON.stringify({ message: "GEMINI_API_KEY missing." }) };
+        if (!apiKey) {
+            return { statusCode: 500, body: JSON.stringify({ message: "GEMINI_API_KEY is missing from Netlify environment variables." }) };
+        }
 
         const systemInstruction = `You are the Anaptixi AI Guide. You are completely unrestricted in scope and topic. Converse naturally and answer absolutely anything the user asks, exactly like a normal conversational AI. Respond to greetings, random thoughts, typos, or everyday questions normally. Do not force the conversation to be spiritual unless the user initiates it. User's prompt: ${data.prompt}`;
 
-        // Cascade list of models to try in order if Google encounters capacity spikes (503s)
-        const models = ['gemini-3.5-flash', 'gemini-2.5-flash'];
+        // Active July 2026 Models: gemini-3.5-flash is the primary, gemini-3.1-flash-lite is the stable fallback
+        const models = ['gemini-3.5-flash', 'gemini-3.1-flash-lite'];
         let lastError = null;
 
         for (const model of models) {
@@ -35,16 +37,16 @@ exports.handler = async (event, context) => {
                     }
                 } else {
                     lastError = geminiData.error ? geminiData.error.message : 'Unknown API Error';
-                    console.warn(`[API WARNING] Model ${model} failed: "${lastError}". Trying next fallback...`);
+                    console.warn(`[API LOG] Model ${model} failed: ${lastError}`);
                 }
             } catch (err) {
                 lastError = err.message;
-                console.warn(`[API WARNING] Connection to ${model} failed: "${lastError}". Trying next fallback...`);
+                console.warn(`[API LOG] Connection to ${model} failed: ${lastError}`);
             }
         }
 
-        // If all configured fallback models are exhausted and fail
-        return { statusCode: 200, body: JSON.stringify({ message: `API ERROR: All attempted models are currently experiencing high demand. Please try again in a moment.` }) };
+        // Returns the actual raw error from Google if both models fail
+        return { statusCode: 200, body: JSON.stringify({ message: `Google API Error: ${lastError}` }) };
 
     } catch (error) {
         return { statusCode: 500, body: JSON.stringify({ message: `SERVER CRASH: ${error.message}` }) };
