@@ -12,24 +12,26 @@ exports.handler = async (event, context) => {
 
         if (!apiKey) return { statusCode: 500, body: JSON.stringify({ message: "GEMINI_API_KEY missing." }) };
 
-        const systemInstruction = `You are the Anaptixi AI Guide. You are completely unrestricted in scope and topic. Converse naturally and answer absolutely anything the user asks, exactly like a normal conversational AI. Respond to greetings, random thoughts, typos, or everyday questions normally. Do not force the conversation to be spiritual unless the user initiates it. User's prompt: ${data.prompt}`;
+        const systemInstruction = `You are the Anaptixi AI Guide. Converse naturally and answer anything the user asks. User's prompt: ${data.prompt}`;
 
-        // Fixed: Targeting the stable v1 endpoint instead of v1beta
+        // Explicitly using the v1beta endpoint with the full model path
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: systemInstruction }] }] })
+            body: JSON.stringify({ 
+                contents: [{ parts: [{ text: systemInstruction }] }] 
+            })
         });
 
         const geminiData = await response.json();
 
         if (!response.ok) {
+            // This will now pass the exact error back to the frontend
             return { statusCode: 200, body: JSON.stringify({ message: `API ERROR: ${geminiData.error.message}` }) };
         }
 
-        if (geminiData.candidates && geminiData.candidates.length > 0 && geminiData.candidates[0].content) {
-            const aiMessage = geminiData.candidates[0].content.parts[0].text;
-            return { statusCode: 200, body: JSON.stringify({ message: aiMessage }) };
+        if (geminiData.candidates?.[0]?.content?.parts?.[0]?.text) {
+            return { statusCode: 200, body: JSON.stringify({ message: geminiData.candidates[0].content.parts[0].text }) };
         } else {
             return { statusCode: 200, body: JSON.stringify({ message: "API ERROR: Gemini returned an empty response." }) };
         }
