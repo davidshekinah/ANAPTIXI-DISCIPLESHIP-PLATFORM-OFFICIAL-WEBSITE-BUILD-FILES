@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activePrayerType = null;
     const SCHEDULED_TARGET_SECONDS = 300; 
 
-    // Database Grid Array (Replaces localStorage)
+    // Grid Array (Our unified state)
     let completedHoursToday = []; 
 
     const navLinks = document.querySelectorAll('.nav-link');
@@ -33,14 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const freewillBtn = document.getElementById('btn-freewill-prayer');
     const freewillTimerDisplay = document.getElementById('freewill-timer');
 
-    // 2. FETCH DYNAMIC AUDIO FROM MONGODB
+    // 2. FETCH DYNAMIC AUDIO
     async function loadMediaLinks() {
         try {
             const response = await fetch('/.netlify/functions/getMedia');
             const data = await response.json();
-            if (data.media && data.media.length > 0) {
-                audioDatabaseLinks = data.media.map(m => m.url);
-            }
+            if (data.media) audioDatabaseLinks = data.media.map(m => m.url);
         } catch (error) {
             console.error("Failed to load audio links from database:", error);
         }
@@ -56,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (Notification.permission === 'default') {
                 notificationPrompt.style.display = 'block';
             }
-            
             btnAllowPush.addEventListener('click', () => {
                 Notification.requestPermission().then(permission => {
                     notificationPrompt.style.display = 'none';
@@ -98,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', (e) => {
             if (e.target.getAttribute('data-status') === 'unavailable') {
                 e.preventDefault();
-                alert(`${e.target.textContent.trim()} Tab is currently unavailable, check back later. blessings!`);
+                alert(`${e.target.textContent.trim()} Tab is currently unavailable, check back later.`);
             }
         });
     });
@@ -167,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
             prayerInterval = setInterval(() => {
                 secondsElapsed++;
                 scheduledTimerDisplay.textContent = formatTime(secondsElapsed, true);
-                if (secondsElapsed === SCHEDULED_TARGET_SECONDS) {
+                if (secondsElapsed >= SCHEDULED_TARGET_SECONDS) {
                     isPrayerComplete = true;
                     stopAudio(); 
                     scheduledBtn.textContent = "Stop Praying and Record Session";
@@ -180,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm("Your Prayer isn't complete yet, are you sure you want to halt? Note that it won't be recorded.")) resetPrayerState();
         } else {
             recordSession('scheduled', SCHEDULED_TARGET_SECONDS);
-            // localStorage grid logic completely removed here
             resetPrayerState();
         }
     }
@@ -239,7 +235,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (response.ok) {
                 alert(`Session recorded! Time prayed: ${Math.floor(durationInSeconds / 60)}m ${durationInSeconds % 60}s`);
-                fetchProgressData(); // Immediately re-fetch DB data to lock the UI
+                
+                // --- OPTIMISTIC UI UPDATE: Instant feedback! ---
+                if (type === 'scheduled') {
+                    completedHoursToday.push(new Date().getHours());
+                    updateHourGrid();
+                    updatePrayerButtonState(true);
+                }
+                
+                fetchProgressData(); // Sync the background stats
             }
         } catch (error) {
             console.error("Recording failed:", error);
@@ -297,18 +301,26 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             
-            // --- NEW: MongoDB Database Source of Truth Check ---
-            if (data.scheduledLogs) {
+            // --- DEFENSIVE DATABASE FETCHING ---
+            // Grabs the logs no matter how the backend names them
+            let dbLogs = data.scheduledLogs || (data.logs ? data.logs.filter(l => l.type === 'scheduled') : []);
+            
+            if (dbLogs.length > 0) {
                 const now = new Date();
-                completedHoursToday = data.scheduledLogs
-                    .filter(log => new Date(log.completedAt).toDateString() === now.toDateString())
-                    .map(log => new Date(log.completedAt).getHours());
+                const dbHours = dbLogs
+                    .map(log => new Date(log.completedAt || log.timestamp)) // Handles both date variable formats
+                    .filter(date => date.toDateString() === now.toDateString())
+                    .map(date => date.getHours());
                 
-                let hasPrayedThisHour = completedHoursToday.includes(now.getHours());
-                updatePrayerButtonState(hasPrayedThisHour);
+                // Merges DB hours with optimistic hours so nothing gets wiped out by lag
+                completedHoursToday = [...new Set([...completedHoursToday, ...dbHours])];
             }
-            // ---------------------------------------------------
 
+            let hasPrayedThisHour = completedHoursToday.includes(new Date().getHours());
+            updatePrayerButtonState(hasPrayedThisHour);
+            updateHourGrid(); // Force UI update immediately
+
+            // Update stats
             document.getElementById('stat-daily').textContent = `${data.dailyPercent || 0}%`;
             document.getElementById('stat-monthly').textContent = `${data.monthlyPercent || 0}%`;
             document.getElementById('stat-yearly').textContent = `${data.yearlyPercent || 0}%`;
@@ -318,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (data.freeFlowLogs && data.freeFlowLogs.length > 0) {
                 data.freeFlowLogs.forEach(log => {
-                    const formattedDate = new Date(log.completedAt).toLocaleString();
+                    const formattedDate = new Date(log.completedAt || log.timestamp).toLocaleString();
                     const m = Math.floor(log.durationInSeconds / 60);
                     const s = log.durationInSeconds % 60;
                     logContainer.innerHTML += `<li style="padding: 10px; background: #f8fafc; margin-bottom: 5px; border-radius: 6px; border: 1px solid #e2e8f0;"><strong>Date:</strong> ${formattedDate} | <strong>Duration:</strong> ${m}m ${s}s</li>`;
@@ -335,9 +347,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentHour = new Date().getHours();
         document.querySelectorAll('.hour-box').forEach(box => {
             const boxHour = parseInt(box.dataset.hour);
-            if (completedHoursToday.includes(boxHour)) box.className = 'hour-box green'; 
-            else if (boxHour < currentHour) box.className = 'hour-box red'; 
-            else box.className = 'hour-box numb'; 
+            
+            if (completedHoursToday.includes(boxHour)) {
+                box.className = 'hour-box green';
+            } else if (boxHour < currentHour) {
+                box.className = 'hour-box red';
+            } else {
+                box.className = 'hour-box numb';
+            }
         });
     }
 
