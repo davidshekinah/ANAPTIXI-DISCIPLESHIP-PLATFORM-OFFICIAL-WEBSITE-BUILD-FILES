@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let activePrayerType = null;
     const SCHEDULED_TARGET_SECONDS = 300; 
 
+    // Database Grid Array (Replaces localStorage)
+    let completedHoursToday = []; 
+
     const navLinks = document.querySelectorAll('.nav-link');
     const subTabBtns = document.querySelectorAll('.sub-tab-btn');
     const subTabs = document.querySelectorAll('.sub-tab-content');
@@ -42,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Failed to load audio links from database:", error);
         }
     }
-    loadMediaLinks(); // Fetch immediately on load
+    loadMediaLinks(); 
 
     // 3. SERVICE WORKER & NOTIFICATION LOGIC
     const notificationPrompt = document.getElementById('notification-prompt');
@@ -69,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
 
-        // Trigger exactly at the top of the hour (Minute 00)
         if (currentMinute === 0 && currentHour !== lastNotifiedHour) {
             lastNotifiedHour = currentHour;
             
@@ -78,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     reg.showNotification("Prayer Hour Reminder", {
                         body: "Hello Anaptixian, it's time to pray.",
                         icon: '/ANAPTIXI LOGO.png',
-                        vibrate: [200, 100, 200, 100, 200, 100, 200], // Extended alarm vibration
+                        vibrate: [200, 100, 200, 100, 200, 100, 200], 
                         data: { url: "/prayer.html" },
                         actions: [
                             { action: 'pray-now', title: 'Pray Now' },
@@ -127,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function startAudioIfRequested() {
         const wantsAudio = confirm("Would you like to play background sound during your prayer?");
         if (wantsAudio && audioDatabaseLinks.length > 0) {
-            // Selects a random URL pulled from your MongoDB GitHub Releases
             const randomURL = audioDatabaseLinks[Math.floor(Math.random() * audioDatabaseLinks.length)];
             backgroundAudio.src = randomURL;
             backgroundAudio.loop = true;
@@ -179,12 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm("Your Prayer isn't complete yet, are you sure you want to halt? Note that it won't be recorded.")) resetPrayerState();
         } else {
             recordSession('scheduled', SCHEDULED_TARGET_SECONDS);
-            let today = new Date().toDateString();
-            let completedHours = JSON.parse(localStorage.getItem(`anaptixi_grid_${today}`)) || [];
-            completedHours.push(new Date().getHours());
-            localStorage.setItem(`anaptixi_grid_${today}`, JSON.stringify(completedHours));
+            // localStorage grid logic completely removed here
             resetPrayerState();
-            updateHourGrid();
         }
     }
 
@@ -242,14 +239,56 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (response.ok) {
                 alert(`Session recorded! Time prayed: ${Math.floor(durationInSeconds / 60)}m ${durationInSeconds % 60}s`);
-                fetchProgressData(); 
+                fetchProgressData(); // Immediately re-fetch DB data to lock the UI
             }
         } catch (error) {
             console.error("Recording failed:", error);
         }
     }
 
-    // 8. PROGRESS DATA & GRID UI
+    // 8. PROGRESS DATA, MONGODB GRID & UI LOCKING
+    function updatePrayerButtonState(hasPrayedInCurrentHour) {
+        const container = scheduledBtn.parentNode;
+
+        if (hasPrayedInCurrentHour) {
+            scheduledBtn.style.display = 'none';
+            
+            let msgDiv = document.getElementById('prayer-lock-msg');
+            if (!msgDiv) {
+                msgDiv = document.createElement('div');
+                msgDiv.id = 'prayer-lock-msg';
+                msgDiv.style.marginTop = '15px';
+                msgDiv.style.color = '#334155';
+                msgDiv.style.textAlign = 'center';
+                
+                msgDiv.innerHTML = `
+                    <p>You have prayed in this hour and your next prayer hour is in <span id="prayer-lock-timer"></span>.</p>
+                    <p>Click <span id="nav-to-freewill" style="color: #d97706; text-decoration: underline; cursor: pointer;">here</span> to navigate to the Free-Will Prayer tab if you want to continue praying in this hour.</p>
+                `;
+                container.appendChild(msgDiv);
+
+                document.getElementById('nav-to-freewill').addEventListener('click', () => {
+                    document.querySelector('[data-target="tab-freewill"]').click();
+                });
+            }
+            updateLockTimer();
+        } else {
+            scheduledBtn.style.display = 'block';
+            const msgDiv = document.getElementById('prayer-lock-msg');
+            if (msgDiv) msgDiv.remove();
+        }
+    }
+
+    function updateLockTimer() {
+        const timerSpan = document.getElementById('prayer-lock-timer');
+        if (timerSpan) {
+            const now = new Date();
+            const minsLeft = 59 - now.getMinutes();
+            const secsLeft = 60 - now.getSeconds();
+            timerSpan.textContent = `0 hours, ${minsLeft} minutes, ${secsLeft} seconds`;
+        }
+    }
+
     async function fetchProgressData() {
         try {
             const response = await fetch('/.netlify/functions/getProgress', {
@@ -258,6 +297,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             
+            // --- NEW: MongoDB Database Source of Truth Check ---
+            if (data.scheduledLogs) {
+                const now = new Date();
+                completedHoursToday = data.scheduledLogs
+                    .filter(log => new Date(log.completedAt).toDateString() === now.toDateString())
+                    .map(log => new Date(log.completedAt).getHours());
+                
+                let hasPrayedThisHour = completedHoursToday.includes(now.getHours());
+                updatePrayerButtonState(hasPrayedThisHour);
+            }
+            // ---------------------------------------------------
+
             document.getElementById('stat-daily').textContent = `${data.dailyPercent || 0}%`;
             document.getElementById('stat-monthly').textContent = `${data.monthlyPercent || 0}%`;
             document.getElementById('stat-yearly').textContent = `${data.yearlyPercent || 0}%`;
@@ -282,10 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateHourGrid() {
         const currentHour = new Date().getHours();
-        const completedHours = JSON.parse(localStorage.getItem(`anaptixi_grid_${new Date().toDateString()}`)) || [];
         document.querySelectorAll('.hour-box').forEach(box => {
             const boxHour = parseInt(box.dataset.hour);
-            if (completedHours.includes(boxHour)) box.className = 'hour-box green'; 
+            if (completedHoursToday.includes(boxHour)) box.className = 'hour-box green'; 
             else if (boxHour < currentHour) box.className = 'hour-box red'; 
             else box.className = 'hour-box numb'; 
         });
@@ -354,14 +404,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 10. SYSTEM LOOP
-    updateHourGrid();
-    checkPdfButtonAvailability();
     fetchProgressData();
     
-    // Checks every second (runs the UI updates and monitors for the 00 minute mark to trigger Push Notification)
+    // Checks every second to run the UI updates, animate the countdown timer, and monitor for the Push Notification
     setInterval(() => {
         updateHourGrid();
         checkPdfButtonAvailability();
         checkHourAndNotify();
+        updateLockTimer();
     }, 1000); 
 });
