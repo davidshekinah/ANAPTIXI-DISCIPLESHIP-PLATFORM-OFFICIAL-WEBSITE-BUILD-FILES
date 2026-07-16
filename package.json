@@ -1,0 +1,22 @@
+{
+  "name": "anaptixi-discipleship-platform",
+  "version": "1.0.0",
+  "description": "Official website backend infrastructure for the Anaptixi Discipleship Platform",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "mongodb": "^6.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git"
+  },
+  "keywords": [
+    "anaptixi",
+    "discipleship"
+  ],
+  "author": "Anaptixi Admin",
+  "license": "ISC"
+}

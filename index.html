@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anaptixi Discipleship Platform - Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-brand">
+            <img src="ANAPTIXI LOGO.png" alt="Anaptixi Logo" class="logo-img">
+        </div>
+
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link">HOME</a></li>
+            <li><a href="contact.html" class="nav-link">CONTACT</a></li>
+            
+            <li class="auth-required"><a href="prayer.html" class="nav-link">PRAYER</a></li>
+            <li class="auth-required"><a href="#" class="nav-link" data-status="unavailable">BIBLE STUDY</a></li>
+            <li class="auth-required"><a href="#" class="nav-link" data-status="unavailable">SERMON</a></li>
+            <li class="auth-required"><a href="#" class="nav-link" data-status="unavailable">WORSHIP</a></li>
+            <li class="auth-required"><a href="#" class="nav-link" data-status="unavailable">CONFESSION</a></li>
+            <li class="auth-required"><a href="#" class="nav-link" data-status="unavailable">MEDITATION</a></li>
+            <li class="auth-required"><a href="#" class="nav-link" data-status="unavailable">DAILY TASK</a></li>
+            <li class="auth-required"><a href="#" class="nav-link" data-status="unavailable">PROGRESS MONITOR</a></li>
+        </ul>
+
+        <button id="nav-login-btn" class="btn-user-icon" aria-label="User Account">
+            <svg id="default-user-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </button>
+    </nav>
+
+    <div class="ticker-container">
+        <div id="countdown-ticker" class="ticker-text">
+            Loading productivity countdown...
+        </div>
+    </div>
+
+    <main class="container">
+        <section class="overview-section">
+            <h2>An overview of Anaptixi</h2>
+            <p>Anaptixi is a discipleship and mentorship platform that puts structures in place to ensure the growth of its disciples.</p>
+            <p>Anaptixi discipleship platform enforces principles to ensure that its disciples are consistent and productive in the recommended growth-related activities such as Praying; Studying the scripture properly; Listening to Sermons; Confessing scriptures and words of affirmation; Worshipping God genuinely; Meditating; Preparing and strictly sticking to daily Schedules that align with your goals and by extension, your visions with the aim to have achieved all at their specific scheduled time.</p>
+            <p>It is run as a family but yet has a leadership structure in place to ensure stability and sustainability with the lead discipler, Pastor David Shekinah and then the Family Admin – Miss Hephzibah Ajayi, then the Family Directorate – Miss Olaogun Oluwalanumi, then other members.</p>
+        </section>
+
+        <section class="leadership-section">
+            <h2 class="leadership-title">Leadership Structure</h2>
+            <div class="leadership-grid">
+                <div class="leader-card">
+                    <img src="007 SHEKINAH DAVID.jpeg" alt="Pastor David Shekinah">
+                    <h3>Pastor David Shekinah</h3>
+                    <p>Lead Discipler</p>
+                </div>
+                <div class="leader-card">
+                    <img src="002 AJAYI HEPHZIBAH.jpeg" alt="Miss Hephzibah Ajayi">
+                    <h3>Miss Hephzibah Ajayi</h3>
+                    <p>Family Admin</p>
+                </div>
+                <div class="leader-card">
+                    <img src="003 OLAOGUN OLUWALANUMI.jpeg" alt="Miss Olaogun Oluwalanumi">
+                    <h3>Miss Olaogun Oluwalanumi</h3>
+                    <p>Family Directorate</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="join-section">
+            <h2>Join Us</h2>
+            <p>We are open to new willing and dogged members who believe strongly in discipleship and have a desire to grow, however…</p>
+            
+            <div class="warning-block">
+                <p class="warning-text">WARNING: GROWTH IS EXPENSIVE, DISCILESHIP IS INTENSIVE TRAINING.</p>
+                <p class="warning-text">YOU WILL BE GREATLY PUSHED ON THIS PLATFORM, THINK DEEPLY BEFORE JOINING.</p>
+                <p class="warning-text">BE SURE THAT YOU’RE NOT JUST BEEN EMOTIONAL (either excited by the prospect of been discipled or overwhelmed by the current situation of your life) BUT GENUINELY INTENTIONAL (ready to be intensively discipled properly).</p>
+                <p class="mentorship-note">Note that before joining, you will be on a 3 months personal mentorship phase with any of the family leaders as assigned before been accessed and admitted based on assessment.</p>
+            </div>
+
+            <p style="margin-top: 20px;">If you’re still willing to join, please fill out this <a id="join-form-link" class="form-link">form</a>.</p>
+        </section>
+    </main>
+
+    <div id="ask-bubble" class="ask-bubble">
+        <span class="bubble-icon">💬</span>
+        <span>ask a question</span>
+    </div>
+
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-content auth-modal">
+            <span id="close-login-modal" class="close-btn">&times;</span>
+            
+            <div class="auth-toggle-nav">
+                <button id="nav-tab-register" class="auth-tab">Register</button>
+                <button id="nav-tab-login" class="auth-tab">Login</button>
+            </div>
+            
+            <div id="login-component" class="auth-view" style="display: none;">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Log in using your Anaptixi Identity</p>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-identity">Anaptixi Identity</label>
+                        <input type="email" id="login-identity" placeholder="firstnamelastname@anaptixi.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-security-key">Security Key</label>
+                        <input type="password" id="login-security-key" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Sign In</button>
+                </form>
+            </div>
+
+            <div id="register-component" class="auth-view">
+                <h2>New Identity</h2>
+                <p class="auth-subtitle">Register for approved members only</p>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="reg-firstname">First Name</label>
+                        <input type="text" id="reg-firstname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-surname">Surname</label>
+                        <input type="text" id="reg-surname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-anaptixi-key">Anaptixi Key (Secret Verification Key)</label>
+                        <input type="text" id="reg-anaptixi-key" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-age">Age</label>
+                        <input type="number" id="reg-age" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-profile-pic">Profile Picture Upload</label>
+                        <input type="file" id="reg-profile-pic" accept="image/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Password (Security Key)</label>
+                        <input type="password" id="reg-password" required>
+                    </div>
+                    <button type="submit" class="submit-btn" style="background-color: var(--accent-color);">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span id="close-profile-modal" class="close-btn">&times;</span>
+            <h2 style="margin-bottom: 25px;">My Profile</h2>
+            
+            <img id="profile-display-pic" src="" alt="Profile Picture" class="profile-display-img">
+            
+            <div class="profile-info-grid">
+                <div class="profile-row">
+                    <span class="profile-label">First Name:</span>
+                    <span id="profile-display-fn" class="profile-value"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Surname:</span>
+                    <span id="profile-display-sn" class="profile-value"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Username:</span>
+                    <span id="profile-display-un" class="profile-value" style="color: var(--accent-color); font-weight: 600;"></span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Age:</span>
+                    <span id="profile-display-age" class="profile-value"></span>
+                </div>
+            </div>
+
+            <button id="logout-btn" class="submit-btn" style="background-color: var(--danger-color); margin-top: 25px;">Log Out</button>
+        </div>
+    </div>
+
+    <div id="ask-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span id="close-ask-modal" class="close-btn">&times;</span>
+            <h2>Ask a Question</h2>
+            <form action="https://formspree.io/f/xdarkbvg" method="POST">
+                <input type="hidden" name="_to" value="anaptixiadmin@gmail.com">
+                <div class="form-group">
+                    <label for="question-text">Your Question</label>
+                    <textarea id="question-text" name="question" rows="5" placeholder="Type your question here" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">✔️ Submit Question</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="join-modal" class="modal-overlay">
+        <div class="modal-content styled-modal" style="max-width: 700px;">
+            <span id="close-join-modal" class="close-btn">&times;</span>
+            <h2 class="form-main-title">Anaptixi Membership Application</h2>
+            
+            <form action="https://formspree.io/f/xdarkbvg" method="POST">
+                <fieldset class="form-section">
+                    <legend>Personal Details</legend>
+                    <div class="form-group">
+                        <label for="join-name">Full Name</label>
+                        <input type="text" id="join-name" name="full_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="join-dob">Date of birth</label>
+                        <input type="date" id="join-dob" name="date_of_birth" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="join-state">State of Origin</label>
+                        <input type="text" id="join-state" name="state_of_origin" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="join-reason">Why do you want to join anaptixi?</label>
+                        <textarea id="join-reason" name="reason_to_join" rows="3" required></textarea>
+                    </div>
+                </fieldset>
+
+                <fieldset class="form-section">
+                    <legend>Educational Background</legend>
+                    <div class="form-group">
+                        <label for="edu-status">Educational status</label>
+                        <select id="edu-status" name="educational_status" required>
+                            <option value="" disabled selected>-- Select Status --</option>
+                            <option value="no-formal">No formal education</option>
+                            <option value="secondary-student">Secondary School Student (I am currently in school)</option>
+                            <option value="secondary-graduate">Secondary School Graduate (I am done with secondary school and obtained a school leaving certificate)</option>
+                            <option value="undergraduate">Undergraduate (gained admission and studying currently)</option>
+                            <option value="graduate">Graduate (I am done with first level University e.g., B.Sc. and obtained a degree)</option>
+                        </select>
+                    </div>
+
+                    <div id="edu-secondary-student" class="dynamic-edu-section">
+                        <div class="form-group">
+                            <label>What school do you attend?</label>
+                            <input type="text" name="secondary_school_name" placeholder="What school do you attend?">
+                        </div>
+                        <div class="form-group">
+                            <label>What class are you?</label>
+                            <input type="text" name="secondary_class" placeholder="What class are you?">
+                        </div>
+                    </div>
+
+                    <div id="edu-undergraduate" class="dynamic-edu-section">
+                        <div class="form-group">
+                            <label>What University do you study at?</label>
+                            <input type="text" name="university_name" placeholder="What University do you study at?">
+                        </div>
+                        <div class="form-group">
+                            <label>What level are you currently?</label>
+                            <input type="text" name="undergraduate_level" placeholder="What level are you currently?">
+                        </div>
+                        <div class="form-group">
+                            <label>What programme are you studying?</label>
+                            <input type="text" name="undergraduate_programme" placeholder="What programme are you studying?">
+                        </div>
+                    </div>
+
+                    <div id="edu-graduate" class="dynamic-edu-section">
+                        <div class="form-group">
+                            <label>What year did you graduate?</label>
+                            <input type="text" name="graduation_year" placeholder="What year did you graduate?">
+                        </div>
+                        <div class="form-group">
+                            <label>Are you done with your NYSC service year or awaiting call up or currently at it?</label>
+                            <input type="text" name="nysc_status" placeholder="Are you done with your NYSC service year or awaiting call up or currently at it?">
+                        </div>
+                        <div class="form-group">
+                            <label>Are you working already, if yes what is the schedule like, is it a 9-5 or remote job?</label>
+                            <input type="text" name="job_schedule" placeholder="Are you working already, if yes what is the schedule like, is it a 9-5 or remote job?">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="form-section confidential-section">
+                    <legend>Confidential Space</legend>
+                    <p class="section-notice">Note that all answers here are considered highly confidential. This is a safe space.</p>
+                    
+                    <div class="form-group">
+                        <label for="join-phase">Are you going through a difficult phase at the moment? If yes, type it in the box if you want to share.</label>
+                        <textarea id="join-phase" name="difficult_phase" rows="3" placeholder="Share your difficult moment with us"></textarea>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="difficult_phase_deferred" value="I choose to share when I join"> I choose to share when I join.
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="join-trauma">Do you have any traumas? (Anything that happened in the recent or far past that still haunts or hurts you. For example: societal traumas, parental trauma, sexual trauma or event/incident related trauma). If yes, type it in the box if you want to share.</label>
+                        <textarea id="join-trauma" name="traumas" rows="3" placeholder="Share your traumas with us"></textarea>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="traumas_deferred" value="I choose to share when I join"> I choose to share when I join.
+                        </label>
+                    </div>
+                </fieldset>
+
+                <fieldset class="form-section">
+                    <legend>Agreements & Commitments</legend>
+                    <div class="form-group">
+                        <label for="join-push">Do you subscribe to been pushed beyond your limits?</label>
+                        <select id="join-push" name="subscribe_to_pushing" required>
+                            <option value="" disabled selected>-- Select Option --</option>
+                            <option value="Yes">Yes, absolutely</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="join-submission">Honor and obedience are key in submission, would that be an issue?</label>
+                        <select id="join-submission" name="submission_issue" required>
+                            <option value="" disabled selected>-- Select Option --</option>
+                            <option value="No">No, it will not be an issue</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="join-extra">Any other thing we should know?</label>
+                        <textarea id="join-extra" name="extra_information" rows="2" placeholder="Tell us"></textarea>
+                    </div>
+                </fieldset>
+
+                <button type="submit" class="submit-btn" style="margin-top: 20px; padding: 15px; font-size: 18px;">Submit Application</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="home.js"></script>
+</body>
+</html>
