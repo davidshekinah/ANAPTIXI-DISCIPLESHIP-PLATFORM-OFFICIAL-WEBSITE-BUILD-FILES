@@ -76,7 +76,7 @@ section h2::after { content: ''; position: absolute; bottom: 0; left: 0; width: 
 .mail-link:hover { color: var(--accent-hover); }
 .blessings-text { font-weight: 700; color: var(--primary-color); font-size: 18px; margin-top: 25px !important; }
 
-/* Global Modals & Form Styling (Carried over for continuity) */
+/* Global Modals & Form Styling */
 .ask-bubble { position: fixed; bottom: 30px; right: 30px; background-color: var(--primary-color); color: #fff; padding: 12px 22px; border-radius: 30px; display: flex; align-items: center; gap: 10px; cursor: pointer; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.3); transition: transform 0.2s ease, background-color 0.2s ease; z-index: 99; }
 .ask-bubble:hover { transform: translateY(-3px) scale(1.02); background-color: #1e293b; }
 .bubble-icon { font-size: 18px; }
@@ -104,6 +104,12 @@ section h2::after { content: ''; position: absolute; bottom: 0; left: 0; width: 
 .profile-row:last-child { border-bottom: none; }
 .profile-label { color: var(--text-muted); font-size: 14px; font-weight: 500; }
 .profile-value { color: var(--primary-color); font-weight: 600; font-size: 14.5px; }
+
+/* Custom In-App Modal Specifics */
+#custom-modal-overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
 
 @media (max-width: 900px) {
     .navbar { grid-template-columns: 1fr auto; gap: 15px; padding: 15px 20px; }

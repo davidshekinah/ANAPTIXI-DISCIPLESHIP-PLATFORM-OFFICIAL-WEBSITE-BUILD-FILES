@@ -4,6 +4,59 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ==========================================
+    // 0. CUSTOM IN-APP MODAL ENGINE
+    // ==========================================
+    function showCustomModal(message, title = "Notification") {
+        return new Promise((resolve) => {
+            let overlay = document.getElementById('custom-modal-overlay');
+            
+            // Dynamically inject the modal HTML if it doesn't already exist
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'custom-modal-overlay';
+                overlay.innerHTML = `
+                    <div class="custom-modal-content">
+                        <h2 id="custom-modal-title"></h2>
+                        <p id="custom-modal-message"></p>
+                        <div class="custom-modal-actions">
+                            <button id="custom-modal-btn-confirm" class="submit-btn">OK</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+
+            const titleEl = document.getElementById('custom-modal-title');
+            const messageEl = document.getElementById('custom-modal-message');
+            const confirmBtn = document.getElementById('custom-modal-btn-confirm');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            overlay.style.display = 'flex';
+            
+            // Smooth fade-in transition logic
+            void overlay.offsetWidth; 
+            overlay.style.opacity = '1';
+
+            const closeModal = () => {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    resolve(true);
+                }, 300); 
+            };
+
+            const onConfirm = () => {
+                closeModal();
+            };
+
+            confirmBtn.addEventListener('click', onConfirm);
+        });
+    }
     
     // ==========================================
     // 1. END OF DAY COUNTDOWN TIMER
@@ -32,11 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.nav-link');
     
     navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
+        link.addEventListener('click', async (e) => {
             if (e.target.getAttribute('data-status') === 'unavailable') {
                 e.preventDefault();
                 const tabName = e.target.textContent.trim();
-                alert(`${tabName} Tab is currently unavailable, check back later. blessings!`);
+                await showCustomModal(`${tabName} Tab is currently unavailable, check back later. blessings!`, "Feature Unavailable");
             }
         });
     });
@@ -78,36 +131,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Dynamic Navigation Icon Function
     function updateNavToProfile(userData) {
-        // Change default SVG to the exact uploaded Base64 string image
         if (userData.profilePic) {
             loginBtn.innerHTML = `<img src="${userData.profilePic}" alt="Profile" class="nav-profile-pic">`;
             loginBtn.style.padding = '0';
             loginBtn.style.borderColor = 'var(--accent-color)';
         }
         
-        // Populate the specific My Profile modal fields
         document.getElementById('profile-display-pic').src = userData.profilePic || "";
         document.getElementById('profile-display-fn').textContent = userData.firstName || "";
         document.getElementById('profile-display-sn').textContent = userData.surname || "";
         document.getElementById('profile-display-un').textContent = userData.handle || "";
         document.getElementById('profile-display-age').textContent = userData.age || "";
         
-        // Unhide standard restricted navigation tabs
         document.body.classList.add('logged-in');
     }
 
-    // Checking Local Session Storage on initial load
     const activeSession = localStorage.getItem('anaptixi_active_user');
     if (activeSession) {
         updateNavToProfile(JSON.parse(activeSession));
     }
 
-    // MAIN NAVIGATION BUTTON CLICK HANDLER
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            // Decision logic: Are they logged in or not?
             if (document.body.classList.contains('logged-in')) {
-                profileModal.style.display = 'flex'; // Pop out the Profile 
+                profileModal.style.display = 'flex'; 
             } else {
                 const isReturning = localStorage.getItem('anaptixi_returning_user');
                 if (isReturning === 'true') {
@@ -115,24 +162,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     switchAuthView('register');
                 }
-                loginModal.style.display = 'flex'; // Pop out Auth Gateway
+                loginModal.style.display = 'flex'; 
             }
         });
     }
 
-    // Logout Process Setup
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
+        logoutBtn.addEventListener('click', async () => {
             localStorage.removeItem('anaptixi_active_user');
             document.body.classList.remove('logged-in');
             
-            // Revert back to User SVG icon
             loginBtn.innerHTML = `<svg id="default-user-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
             loginBtn.style.padding = '';
             loginBtn.style.borderColor = '';
             
             profileModal.style.display = 'none';
-            alert("You have safely logged out.");
+            await showCustomModal("You have safely logged out.", "Session Ended");
             window.scrollTo(0,0);
         });
     }
@@ -160,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ==========================================
-    // 5. DYNAMIC REGISTRATION FORM LOGIC (EDUCATIONAL STATUS)
+    // 5. DYNAMIC REGISTRATION FORM LOGIC 
     // ==========================================
     const eduSelect = document.getElementById('edu-status');
     const dynamicEduSections = document.querySelectorAll('.dynamic-edu-section');
@@ -175,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ==========================================
-    // 6. ANAPTIXI KEY CALCULATION & REGISTRATION SUBMISSION
+    // 6. ANAPTIXI KEY CALCULATION & REGISTRATION 
     // ==========================================
     function calculateExpectedKey(firstName) {
         return firstName.toUpperCase().split('').map(char => {
@@ -200,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const expectedKey = calculateExpectedKey(firstName);
 
             if (enteredKey !== expectedKey) {
-                alert("Incorrect Anaptixi Key, contact the Admin for an Anaptixi key if you haven't or enter the key correctly if you have");
+                await showCustomModal("Incorrect Anaptixi Key, contact the Admin for an Anaptixi key if you haven't or enter the key correctly if you have", "Authentication Error");
                 return; 
             }
 
@@ -225,17 +270,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert(`Success! Your Anaptixi Identity has been created: ${result.handle}`);
+                    await showCustomModal(`Success! Your Anaptixi Identity has been created: ${result.handle}`, "Identity Registered");
                     localStorage.setItem('anaptixi_returning_user', 'true');
                     registerForm.reset();
                     if (loginModal) loginModal.style.display = 'none';
                 } else {
-                    alert(result.message || "An error occurred during registration.");
+                    await showCustomModal(result.message || "An error occurred during registration.", "Registration Failed");
                 }
 
             } catch (error) {
                 console.error("Registration Transmission error:", error);
-                alert("Network error: Could not reach the registration server.");
+                await showCustomModal("Network error: Could not reach the registration server.", "Connection Error");
             }
         });
     }
@@ -262,24 +307,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert(`Login granted! Welcome back, ${result.user.firstName}.`);
+                    await showCustomModal(`Login granted! Welcome back, ${result.user.firstName}.`, "Access Granted");
                     
-                    // Save specific user data to cache natively on the browser
                     localStorage.setItem('anaptixi_returning_user', 'true');
                     localStorage.setItem('anaptixi_active_user', JSON.stringify(result.user));
                     
-                    // Update navigation dynamically without reloading page
                     updateNavToProfile(result.user);
                     
                     loginForm.reset();
                     if (loginModal) loginModal.style.display = 'none';
                 } else {
-                    alert(result.message || "Invalid credentials.");
+                    await showCustomModal(result.message || "Invalid credentials.", "Login Failed");
                 }
 
             } catch (error) {
                 console.error("Login Transmission error:", error);
-                alert("Network error: Could not reach the login server.");
+                await showCustomModal("Network error: Could not reach the login server.", "Connection Error");
             }
         });
     }

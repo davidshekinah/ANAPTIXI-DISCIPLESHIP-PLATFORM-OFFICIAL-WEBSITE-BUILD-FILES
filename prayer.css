@@ -101,8 +101,11 @@ body {
 }
 
 .prayer-btn-container {
-    text-align: center;
+    display: flex; /* Changed from text-align: center to flex for perfect centering */
+    justify-content: center; /* Horizontally center the button */
+    align-items: center; /* Ensure vertical alignment is clean */
     margin-bottom: 40px;
+    width: 100%; /* Ensure container takes full width of parent */
 }
 
 .prayer-btn {
@@ -138,7 +141,7 @@ body {
 }
 
 /* ==========================================\
-   5. 24-HOUR ACCOUNTABILITY GRID
+   5. 24-HOUR ACCOUNTABILITY GRID & LEGEND
    ========================================== */
 .hour-grid {
     display: grid;
@@ -181,6 +184,31 @@ body {
     color: white;
     border-color: var(--danger-color);
 }
+
+/* Grid Legend Styles */
+.grid-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 25px;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+}
+
+.grid-legend div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.grid-legend span:first-child {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
 
 /* ==========================================\
    6. FREE-WILL AI CHAT MODULE
@@ -266,4 +294,91 @@ body {
 .ai-input-area input {
     flex-grow: 1;
     padding: 12px 15px;
-    border: 1px solid var
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    outline: none;
+}
+
+.ai-input-area input:focus {
+    border-color: var(--accent-color);
+}
+
+.ai-input-area button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0 25px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.ai-input-area button:hover {
+    background-color: var(--accent-hover);
+}
+
+/* ==========================================\
+   7. PROGRESS MONITOR REPORTING
+   ========================================== */
+.progress-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.stat-card {
+    background: var(--bg-color);
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.stat-card h3 {
+    margin: 0 0 10px 0;
+    color: var(--text-muted);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-card .percentage {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+/* Report Headings Left Alignment overrides */
+#tab-progress h2, #tab-progress h3 {
+    text-align: left !important;
+}
+
+
+/* ==========================================\
+   8. MODALS (Profile & Custom In-App Alerts)
+   ========================================== */
+.modal-overlay {
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background-color: rgba(15, 23, 42, 0.75); 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 2000; 
+    padding: 20px;
+    backdrop-filter: blur(4px); /* Modern blur effect behind modal */
+}
+
+.modal-content {
+    background-color: var(--surface-color); 
+    padding: 30px; 
+    border-radius: 12px; 
+    width: 100%; 
+    max-width: 400px; 
+    text-align: center; 
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}

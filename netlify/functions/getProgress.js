@@ -37,6 +37,7 @@ exports.handler = async (event, context) => {
         let monthlyScheduledCount = 0;
         let yearlyScheduledCount = 0;
         const freeFlowLogs = [];
+        const scheduledLogs = [];
 
         logs.forEach(log => {
             const logDate = new Date(log.completedAt);
@@ -44,6 +45,7 @@ exports.handler = async (event, context) => {
                 if (logDate >= startOfYear) yearlyScheduledCount++;
                 if (logDate >= startOfMonth) monthlyScheduledCount++;
                 if (logDate >= startOfDay) dailyScheduledCount++;
+                scheduledLogs.push(log); // Track scheduled logs to send to frontend for color state persistence
             } else if (log.type === 'freewill') {
                 freeFlowLogs.push(log);
             }
@@ -65,7 +67,7 @@ exports.handler = async (event, context) => {
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ dailyPercent, monthlyPercent, yearlyPercent, freeFlowLogs })
+            body: JSON.stringify({ dailyPercent, monthlyPercent, yearlyPercent, freeFlowLogs, scheduledLogs })
         };
     } catch (error) {
         if (client) await client.close();

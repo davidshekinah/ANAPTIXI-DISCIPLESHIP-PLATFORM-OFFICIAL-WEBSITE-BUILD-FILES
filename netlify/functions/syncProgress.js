@@ -39,6 +39,37 @@ exports.handler = async (event, context) => {
             return { statusCode: 404, body: JSON.stringify({ message: "User identity not found in database." }) };
         }
 
+        // ==========================================
+        // BACKEND DUPLICATE VALIDATION 
+        // ==========================================
+        if (type === 'scheduled') {
+            const incomingDate = new Date(timestamp);
+            const incomingYear = incomingDate.getFullYear();
+            const incomingMonth = incomingDate.getMonth();
+            const incomingDay = incomingDate.getDate();
+            const incomingHour = incomingDate.getHours();
+
+            const logs = existingUser.prayerLogs || [];
+            const isDuplicate = logs.some(log => {
+                if (log.type === 'scheduled') {
+                    const logDate = new Date(log.completedAt);
+                    return logDate.getFullYear() === incomingYear &&
+                           logDate.getMonth() === incomingMonth &&
+                           logDate.getDate() === incomingDay &&
+                           logDate.getHours() === incomingHour;
+                }
+                return false;
+            });
+
+            if (isDuplicate) {
+                await client.close();
+                return { 
+                    statusCode: 409, 
+                    body: JSON.stringify({ message: "A scheduled session for this hour block has already been recorded." }) 
+                };
+            }
+        }
+
         // Prepare the session object to push into the database
         const newSessionLog = {
             type: type, // 'scheduled' or 'freewill'

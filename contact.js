@@ -4,8 +4,68 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ==========================================
+    // 0. CUSTOM IN-APP MODAL ENGINE
+    // ==========================================
+    function showCustomModal(message, title = "Notification") {
+        return new Promise((resolve) => {
+            let overlay = document.getElementById('custom-modal-overlay');
+            
+            // Dynamically inject the modal HTML if it doesn't already exist
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'custom-modal-overlay';
+                overlay.className = 'modal-overlay';
+                overlay.style.zIndex = '2000';
+                overlay.innerHTML = `
+                    <div class="modal-content" style="max-width: 400px; text-align: center;">
+                        <h2 id="custom-modal-title" style="margin-bottom: 15px; color: var(--primary-color);"></h2>
+                        <p id="custom-modal-message" style="margin-bottom: 25px; color: var(--text-muted); font-size: 15px; line-height: 1.5;"></p>
+                        <div class="custom-modal-actions" style="display: flex; justify-content: center; gap: 10px;">
+                            <button id="custom-modal-btn-confirm" class="submit-btn" style="width: auto; padding: 10px 30px;">OK</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+
+            const titleEl = document.getElementById('custom-modal-title');
+            const messageEl = document.getElementById('custom-modal-message');
+            const confirmBtn = document.getElementById('custom-modal-btn-confirm');
+            const cancelBtn = document.getElementById('custom-modal-btn-cancel');
+
+            if (cancelBtn) cancelBtn.style.display = 'none';
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            overlay.style.display = 'flex';
+            
+            // Smooth fade-in transition logic
+            void overlay.offsetWidth; 
+            overlay.style.opacity = '1';
+
+            const closeModal = () => {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    resolve(true);
+                }, 300); 
+            };
+
+            const onConfirm = () => {
+                closeModal();
+            };
+
+            confirmBtn.addEventListener('click', onConfirm);
+        });
+    }
     
+    // ==========================================
     // 1. END OF DAY COUNTDOWN TIMER
+    // ==========================================
     const tickerElement = document.getElementById('countdown-ticker');
 
     function updateCountdown() {
@@ -23,19 +83,23 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
+    // ==========================================
     // 2. UNAVAILABLE TABS HANDLER
+    // ==========================================
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
+        link.addEventListener('click', async (e) => {
             if (e.target.getAttribute('data-status') === 'unavailable') {
                 e.preventDefault();
                 const tabName = e.target.textContent.trim();
-                alert(`${tabName} Tab is currently unavailable, check back later. blessings!`);
+                await showCustomModal(`${tabName} Tab is currently unavailable, check back later. blessings!`, "Feature Unavailable");
             }
         });
     });
 
+    // ==========================================
     // 3. UI STATE & MODAL MANAGERS
+    // ==========================================
     const loginBtn = document.getElementById('nav-login-btn'); 
     const loginModal = document.getElementById('login-modal');
     const closeLoginModal = document.getElementById('close-login-modal');
@@ -103,14 +167,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
+        logoutBtn.addEventListener('click', async () => {
             localStorage.removeItem('anaptixi_active_user');
             document.body.classList.remove('logged-in');
             loginBtn.innerHTML = `<svg id="default-user-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
             loginBtn.style.padding = '';
             loginBtn.style.borderColor = '';
             profileModal.style.display = 'none';
-            alert("You have safely logged out.");
+            await showCustomModal("You have safely logged out.", "Session Ended");
             window.scrollTo(0,0);
         });
     }
@@ -118,7 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeLoginModal) closeLoginModal.addEventListener('click', () => loginModal.style.display = 'none');
     if (closeProfileModal) closeProfileModal.addEventListener('click', () => profileModal.style.display = 'none');
 
+    // ==========================================
     // 4. ASK A QUESTION BUBBLE MODAL
+    // ==========================================
     const askBubble = document.getElementById('ask-bubble');
     const askModal = document.getElementById('ask-modal');
     const closeAskModal = document.getElementById('close-ask-modal');
@@ -126,7 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (askBubble) askBubble.addEventListener('click', () => askModal.style.display = 'flex');
     if (closeAskModal) closeAskModal.addEventListener('click', () => askModal.style.display = 'none');
 
-    // 5. ANAPTIXI KEY CALCULATION & REGISTRATION SUBMISSION
+    // ==========================================
+    // 5. ANAPTIXI KEY CALCULATION & REGISTRATION 
+    // ==========================================
     function calculateExpectedKey(firstName) {
         return firstName.toUpperCase().split('').map(char => {
             const code = char.charCodeAt(0) - 64; 
@@ -149,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const expectedKey = calculateExpectedKey(firstName);
 
             if (enteredKey !== expectedKey) {
-                alert("Incorrect Anaptixi Key, contact the Admin for an Anaptixi key if you haven't or enter the key correctly if you have");
+                await showCustomModal("Incorrect Anaptixi Key, contact the Admin for an Anaptixi key if you haven't or enter the key correctly if you have", "Authentication Error");
                 return; 
             }
 
@@ -172,21 +240,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 const result = await response.json();
                 if (response.ok) {
-                    alert(`Success! Your Anaptixi Identity has been created: ${result.handle}`);
+                    await showCustomModal(`Success! Your Anaptixi Identity has been created: ${result.handle}`, "Identity Registered");
                     localStorage.setItem('anaptixi_returning_user', 'true');
                     registerForm.reset();
                     if (loginModal) loginModal.style.display = 'none';
                 } else {
-                    alert(result.message || "An error occurred during registration.");
+                    await showCustomModal(result.message || "An error occurred during registration.", "Registration Failed");
                 }
             } catch (error) {
                 console.error("Registration error:", error);
-                alert("Network error: Could not reach the registration server.");
+                await showCustomModal("Network error: Could not reach the registration server.", "Connection Error");
             }
         });
     }
 
+    // ==========================================
     // 6. LOGIN INTERCEPTION & CACHING
+    // ==========================================
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -202,18 +272,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 const result = await response.json();
                 if (response.ok) {
-                    alert(`Login granted! Welcome back, ${result.user.firstName}.`);
+                    await showCustomModal(`Login granted! Welcome back, ${result.user.firstName}.`, "Access Granted");
                     localStorage.setItem('anaptixi_returning_user', 'true');
                     localStorage.setItem('anaptixi_active_user', JSON.stringify(result.user));
                     updateNavToProfile(result.user);
                     loginForm.reset();
                     if (loginModal) loginModal.style.display = 'none';
                 } else {
-                    alert(result.message || "Invalid credentials.");
+                    await showCustomModal(result.message || "Invalid credentials.", "Login Failed");
                 }
             } catch (error) {
                 console.error("Login error:", error);
-                alert("Network error: Could not reach the login server.");
+                await showCustomModal("Network error: Could not reach the login server.", "Connection Error");
             }
         });
     }
